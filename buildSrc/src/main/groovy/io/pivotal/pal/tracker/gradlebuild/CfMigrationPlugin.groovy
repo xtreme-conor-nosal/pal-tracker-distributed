@@ -24,7 +24,7 @@ class CfMigrationPlugin implements Plugin<Project> {
                         Thread.start {
                             tunnelProcess = "cf ssh -N -L 63306:${getMysqlHost(appName)}:3306 $appName".execute()
                         }
-                        sleep 5_000L
+                        sleep 10_000L
                     }
                 }
 
