@@ -7,11 +7,10 @@ applications:
   env:
     TRUST_CERTS: api.sys.quandary.pal.pivotal.io,uaa.sys.quandary.pal.pivotal.io
     GRANT_TYPE: client_credentials
-    SECURITY_USER_NAME: actuator
-    SECURITY_USER_PASSWORD: operations4red
   services:
   - tracker-backlog-database
   - tracker-service-registry
   - tracker-circuit-breaker-dashboard
   - tracker-amqp
   - tracker-sso
+  - tracker-config-server

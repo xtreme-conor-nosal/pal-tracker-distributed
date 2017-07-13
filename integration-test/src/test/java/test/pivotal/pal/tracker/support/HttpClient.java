@@ -9,19 +9,29 @@ import java.util.Map;
 public class HttpClient {
 
     private static final MediaType JSON = MediaType.parse("application/json");
+    private static final MediaType FORM = MediaType.parse("application/x-www-form-urlencoded");
 
     private final OkHttpClient okHttp = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public Headers getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Headers headers) {
+        this.headers = headers;
+    }
+
+    public Headers headers = new Headers.Builder().build();
 
     public Response get(String url) {
-        return fetch(new Request.Builder().url(url));
+        return fetch(new Request.Builder().url(url).headers(headers));
     }
 
     public Response post(String url, Map<String, Object> jsonBody) {
         try {
             Request.Builder reqBuilder = new Request.Builder()
-                .url(url)
+                .url(url).headers(headers)
                 .post(RequestBody.create(JSON, objectMapper.writeValueAsString(jsonBody)));
 
             return fetch(reqBuilder);
@@ -30,10 +40,18 @@ public class HttpClient {
         }
     }
 
+    public Response post(String url, String formEncoded) {
+            Request.Builder reqBuilder = new Request.Builder()
+                    .url(url).headers(headers)
+                    .post(RequestBody.create(FORM, formEncoded));
+
+            return fetch(reqBuilder);
+    }
+
     public Response put(String url, Map<String, Object> jsonBody) {
         try {
             Request.Builder reqBuilder = new Request.Builder()
-                .url(url)
+                .url(url).headers(headers)
                 .put(RequestBody.create(JSON, objectMapper.writeValueAsString(jsonBody)));
 
             return fetch(reqBuilder);
@@ -43,7 +61,7 @@ public class HttpClient {
     }
 
     public Response delete(String url) {
-        return fetch(new Request.Builder().delete().url(url));
+        return fetch(new Request.Builder().delete().url(url).headers(headers));
     }
 
 

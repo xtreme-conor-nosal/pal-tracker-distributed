@@ -9,3 +9,4 @@ applications:
   services:
   - tracker-amqp
   - tracker-service-registry
+  - tracker-config-server
