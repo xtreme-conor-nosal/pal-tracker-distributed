@@ -4,42 +4,48 @@ package test.pivotal.pal.tracker;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.pal.tracker.testsupport.TestScenarioSupport;
+import okhttp3.Headers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import test.pivotal.pal.tracker.support.ApplicationServer;
 import test.pivotal.pal.tracker.support.HttpClient;
 
+import java.util.Base64;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 import static test.pivotal.pal.tracker.support.MapBuilder.jsonMapBuilder;
 
-public class FlowTest {
+public class DeployedFlowTest {
 
     private final HttpClient httpClient = new HttpClient();
-    private final String workingDir = System.getProperty("user.dir");
-
-    private ApplicationServer registrationServer = new ApplicationServer(workingDir + "/../applications/registration-server/build/libs/registration-server.jar", "8883");
-    private ApplicationServer allocationsServer = new ApplicationServer(workingDir + "/../applications/allocations-server/build/libs/allocations-server.jar", "8881");
-    private ApplicationServer backlogServer = new ApplicationServer(workingDir + "/../applications/backlog-server/build/libs/backlog-server.jar", "8882");
-    private ApplicationServer timesheetsServer = new ApplicationServer(workingDir + "/../applications/timesheets-server/build/libs/timesheets-server.jar", "8884");
 
     private String registrationServerUrl(String path) {
-        return "http://localhost:8883" + path;
+        return "https://registration-pal-cn.apps.quandary.pal.pivotal.io" + path;
     }
 
     private String allocationsServerUrl(String path) {
-        return "http://localhost:8881" + path;
+        return "https://allocations-pal-cn.apps.quandary.pal.pivotal.io" + path;
     }
 
     private String backlogServerUrl(String path) {
-        return "http://localhost:8882" + path;
+        return "https://backlog-pal-cn.apps.quandary.pal.pivotal.io" + path;
     }
 
     private String timesheetsServerUrl(String path) {
-        return "http://localhost:8884" + path;
+        return "https://timesheets-pal-cn.apps.quandary.pal.pivotal.io" + path;
+    }
+
+    private String authUrl() {
+        return "https://p-identity.login.sys.quandary.pal.pivotal.io/oauth/token";
+    }
+
+    private String getBasicAuthHeader() {
+        String id = "0aba9516-5b49-47ed-850f-61433b4eeab8";
+        String secret = "4fac007c-ec9e-445e-86f9-43ac247b973a";
+        return new String(Base64.getEncoder().encode((id + ":" + secret).getBytes()));
     }
 
     private long findResponseId(HttpClient.Response response) {
@@ -55,23 +61,25 @@ public class FlowTest {
         }
     }
 
+    private String findAuthToken(HttpClient.Response response) {
+        try {
+            return JsonPath.parse(response.body).read("$.access_token", String.class);
+        } catch (PathNotFoundException e) {
+            try {
+                return JsonPath.parse(response.body).read("$[0].access_token", String.class);
+            } catch (PathNotFoundException e1) {
+                fail("Could not find access_token in response body. Response was: \n" + response);
+                return "";
+            }
+        }
+    }
 
     @Before
     public void setup() throws Exception {
-        registrationServer.startWithDatabaseName("tracker_registration_test");
-        allocationsServer.startWithDatabaseName("tracker_allocations_test");
-        backlogServer.startWithDatabaseName("tracker_backlog_test");
-        timesheetsServer.startWithDatabaseName("tracker_timesheets_test");
-        ApplicationServer.waitOnPorts("8881", "8882", "8883", "8884");
-        TestScenarioSupport.clearAllDatabases();
     }
 
     @After
     public void tearDown() {
-        registrationServer.stop();
-        allocationsServer.stop();
-        backlogServer.stop();
-        timesheetsServer.stop();
     }
 
     @Test
@@ -82,6 +90,16 @@ public class FlowTest {
         String story = UUID.randomUUID().toString();
 
         HttpClient.Response response;
+
+        httpClient.setHeaders(new Headers.Builder()
+                .add("Authorization: Basic " + getBasicAuthHeader())
+                .add("Accept: application/json")
+                .add("Content-Type: application/x-www-form-urlencoded").build());
+        response = httpClient.post(authUrl(), "grant_type=client_credentials&response_type=token");
+
+        String authToken = findAuthToken(response);
+        httpClient.setHeaders(new Headers.Builder()
+                        .add("Authorization: Bearer " + authToken).build());
 
         response = httpClient.get(registrationServerUrl("/"));
         assertThat(response.body).isEqualTo("Noop!");
