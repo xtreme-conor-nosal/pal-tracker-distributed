@@ -15,6 +15,9 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-actuator"
 
     compile "org.springframework.cloud:spring-cloud-starter-oauth2"
+    compile "org.springframework.cloud:spring-cloud-starter-sleuth"
+    compile "org.springframework.cloud:spring-cloud-sleuth-stream"
+    compile "org.springframework.cloud:spring-cloud-starter-stream-rabbit"
 
     compile "io.pivotal.spring.cloud:spring-cloud-sso-connector:$springCloudSsoVersion"
     compile "io.pivotal.spring.cloud:spring-cloud-services-starter-service-registry"
@@ -29,8 +32,8 @@ dependencies {
 
 bootRun.environment([
         "APPLICATION_OAUTH_ENABLED": true,
-        "SECURITY_OAUTH2_CLIENT_CLIENT_ID": "41b148d3-e6ef-4918-b6d6-4169d62e23bc",
-        "SECURITY_OAUTH2_CLIENT_CLIENT_SECRET": "2fea643d-2350-4994-8017-ea650d3afa5b",
+        "SECURITY_OAUTH2_CLIENT_CLIENT_ID": "38e11729-a8e9-4b67-b406-16152ed03df6",
+        "SECURITY_OAUTH2_CLIENT_CLIENT_SECRET": "64ec6551-3c85-40e7-8af4-cfa3c8930f84",
         "SECURITY_USER_NAME": "actuator",
         "SECURITY_USER_PASSWORD": "operations4red"
 ])
