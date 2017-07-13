@@ -5,9 +5,13 @@ applications:
   memory: 1G
   instances: 1
   env:
-    TRUST_CERTS: api.sys.quandary.pal.pivotal.io
+    TRUST_CERTS: api.sys.quandary.pal.pivotal.io,uaa.sys.quandary.pal.pivotal.io
+    GRANT_TYPE: client_credentials
+    SECURITY_USER_NAME: actuator
+    SECURITY_USER_PASSWORD: operations4red
   services:
   - tracker-allocations-database
   - tracker-service-registry
   - tracker-circuit-breaker-dashboard
   - tracker-amqp
+  - tracker-sso
